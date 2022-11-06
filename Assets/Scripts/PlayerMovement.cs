@@ -7,10 +7,11 @@ public class PlayerMovement : MonoBehaviour
     bool isGrounded;
     public float jumpForce = 10f;
     public float speed = 10f;
+    private Rigidbody2D rb;
 
     //Flip sprites for left and right movement
     bool facingRight;
-    public SpriteRenderer spriteRenderer;
+    public SpriteRenderer spriteRenderer, spriteRenderer2;
 
     private Animator animator;
 
@@ -20,44 +21,32 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        //Move player to the right
-        if (Input.GetKey(KeyCode.D))
+        //Horizontal movement
+        float horizontal = Input.GetAxis("Horizontal");
+        if (horizontal != 0)
         {
-            transform.position += new Vector3(speed, 0, 0);
             isMoving = true;
-            facingRight = true;
+            animator.SetBool("isWalking", isMoving);
+            rb.velocity = new Vector3(horizontal * speed, rb.velocity.y, 0);
+            if (horizontal > 0 && !facingRight)
+            {
+                Flip();
+            }
+            else if (horizontal < 0 && facingRight)
+            {
+                Flip();
+            }
         }
         else
         {
             isMoving = false;
-        }
-        
-        //Move player to the left
-        if (Input.GetKey(KeyCode.A))
-        {
-            transform.position += new Vector3(-speed, 0, 0);
-            isMoving = true;
-            facingRight = false;
-            
-        }
-        else
-        {
-            isMoving = false;
-        }
-
-        //Attack
-        if (Input.GetKeyDown(KeyCode.Mouse1))
-        {
-            isAttacking = true;
-        }
-        else
-        {
-            isAttacking = false;
+            animator.SetBool("isWalking", isMoving);
         }
 
         //Make player jump
@@ -66,6 +55,27 @@ public class PlayerMovement : MonoBehaviour
             GetComponent<Rigidbody2D>().AddForce(new Vector2(0, 5), ForceMode2D.Impulse);
             isGrounded = false;
         }
+
+        //Attack
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            isAttacking = true;
+            animator.SetBool("isAttacking", isAttacking);
+            spriteRenderer2.enabled = true;
+        }
+        else
+        {
+            isAttacking = false;
+            animator.SetBool("isAttacking", isAttacking);
+            spriteRenderer2.enabled = false;
+        }
+    }
+
+    private void Flip()
+    {
+        facingRight = !facingRight;
+        spriteRenderer.flipX = !spriteRenderer.flipX;
+        spriteRenderer2.flipX = !spriteRenderer2.flipX;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -73,39 +83,6 @@ public class PlayerMovement : MonoBehaviour
         if (collision.gameObject.layer == 3)
         {
             isGrounded = true;
-        }
-    }
-
-    private void FixedUpdate()
-    {
-        //Flip sprites
-        if (facingRight)
-        {
-            spriteRenderer.flipX = true;
-        }
-        else
-        {
-            spriteRenderer.flipX = false;
-        }
-
-        //Start walking animation
-        if (isMoving)
-        {
-            animator.SetBool("isWalking", true);
-        }
-        else
-        {
-            animator.SetBool("isWalking", false);
-        }
-
-        //Start attack animation
-        if (isAttacking)
-        {
-            animator.SetBool("isAttacking", true);
-        }
-        else
-        {
-            animator.SetBool("isAttacking", false);
         }
     }
 }
