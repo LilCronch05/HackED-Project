@@ -7,21 +7,16 @@ public class PlayerMovement : MonoBehaviour
     bool isGrounded;
     public float jumpForce = 10f;
     public float speed = 10f;
-    private Rigidbody2D rb;
 
     //Flip sprites for left and right movement
     bool facingRight;
-    public SpriteRenderer spriteRenderer, spriteRenderer2;
+    public SpriteRenderer spriteRenderer;
 
     private Animator animator;
-
-    bool isAttacking;
-    bool isMoving;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
-        rb = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
@@ -31,9 +26,7 @@ public class PlayerMovement : MonoBehaviour
         float horizontal = Input.GetAxis("Horizontal");
         if (horizontal != 0)
         {
-            isMoving = true;
-            animator.SetBool("isWalking", isMoving);
-            rb.velocity = new Vector3(horizontal * speed, rb.velocity.y, 0);
+            animator.SetBool("isWalking", true);
             if (horizontal > 0 && !facingRight)
             {
                 Flip();
@@ -42,11 +35,12 @@ public class PlayerMovement : MonoBehaviour
             {
                 Flip();
             }
+
+            transform.Translate(Vector2.right * horizontal * speed * Time.deltaTime);
         }
         else
         {
-            isMoving = false;
-            animator.SetBool("isWalking", isMoving);
+            animator.SetBool("isWalking", false);
         }
 
         //Make player jump
@@ -57,17 +51,13 @@ public class PlayerMovement : MonoBehaviour
         }
 
         //Attack
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (Input.GetKey(KeyCode.Mouse0))
         {
-            isAttacking = true;
-            animator.SetBool("isAttacking", isAttacking);
-            spriteRenderer2.enabled = true;
+            animator.SetBool("isAttacking", true);
         }
         else
         {
-            isAttacking = false;
-            animator.SetBool("isAttacking", isAttacking);
-            spriteRenderer2.enabled = false;
+            animator.SetBool("isAttacking", false);
         }
     }
 
@@ -75,7 +65,6 @@ public class PlayerMovement : MonoBehaviour
     {
         facingRight = !facingRight;
         spriteRenderer.flipX = !spriteRenderer.flipX;
-        spriteRenderer2.flipX = !spriteRenderer2.flipX;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
